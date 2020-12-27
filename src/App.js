@@ -474,14 +474,6 @@ function SearchSpace({
 
   return (
     <div>
-      <h1> Image Registration with WebGL </h1>
-      <div>
-
-        SearchSpace visualizes the score of each x-y offset. 
-        Darker is better.
-
-        see console for performance metrics (ctrl+shift+i)
-      </div>
       <div style={{display:'flex'}} >
         <div>
           <h2>Fixed Image (haystack)</h2>
@@ -505,6 +497,15 @@ function SearchSpace({
 export default function App() {
   return (
     <div>
+      <h1> Image Alignment with WebGL </h1>
+      <div>
+        Goal: find "moving image" inside "fixed image".<br/>
+
+        SearchSpace visualization shows how good the images are aligned at each x-y coordinate.
+        Darker is better.<br/>
+
+        Open console for performance metrics and results (ctrl+shift+i)
+      </div>
       <SearchSpace fixedUrl="butterfly2.jpg" movingUrl="butterfly3.jpg" />
       <SearchSpace fixedUrl="butterfly2.jpg" movingUrl="butterfly4.jpg" />
       <SearchSpace fixedUrl="butterfly2.jpg" movingUrl="butterfly5.jpg" />
