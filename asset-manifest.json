@@ -1,0 +1,22 @@
+{
+  "files": {
+    "main.css": "https://nikhedonia.github.io/computeshader/static/css/main.6dea0f05.chunk.css",
+    "main.js": "https://nikhedonia.github.io/computeshader/static/js/main.9e3ef60f.chunk.js",
+    "main.js.map": "https://nikhedonia.github.io/computeshader/static/js/main.9e3ef60f.chunk.js.map",
+    "runtime-main.js": "https://nikhedonia.github.io/computeshader/static/js/runtime-main.8ecb4894.js",
+    "runtime-main.js.map": "https://nikhedonia.github.io/computeshader/static/js/runtime-main.8ecb4894.js.map",
+    "static/js/2.d643ea36.chunk.js": "https://nikhedonia.github.io/computeshader/static/js/2.d643ea36.chunk.js",
+    "static/js/2.d643ea36.chunk.js.map": "https://nikhedonia.github.io/computeshader/static/js/2.d643ea36.chunk.js.map",
+    "static/js/3.90a4b12b.chunk.js": "https://nikhedonia.github.io/computeshader/static/js/3.90a4b12b.chunk.js",
+    "static/js/3.90a4b12b.chunk.js.map": "https://nikhedonia.github.io/computeshader/static/js/3.90a4b12b.chunk.js.map",
+    "index.html": "https://nikhedonia.github.io/computeshader/index.html",
+    "static/css/main.6dea0f05.chunk.css.map": "https://nikhedonia.github.io/computeshader/static/css/main.6dea0f05.chunk.css.map",
+    "static/js/2.d643ea36.chunk.js.LICENSE.txt": "https://nikhedonia.github.io/computeshader/static/js/2.d643ea36.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.8ecb4894.js",
+    "static/js/2.d643ea36.chunk.js",
+    "static/css/main.6dea0f05.chunk.css",
+    "static/js/main.9e3ef60f.chunk.js"
+  ]
+}
