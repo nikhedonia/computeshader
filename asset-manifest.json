@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "https://nikhedonia.github.io/computeshader/static/css/main.6dea0f05.chunk.css",
-    "main.js": "https://nikhedonia.github.io/computeshader/static/js/main.4c0ea23a.chunk.js",
-    "main.js.map": "https://nikhedonia.github.io/computeshader/static/js/main.4c0ea23a.chunk.js.map",
+    "main.js": "https://nikhedonia.github.io/computeshader/static/js/main.ffab8270.chunk.js",
+    "main.js.map": "https://nikhedonia.github.io/computeshader/static/js/main.ffab8270.chunk.js.map",
     "runtime-main.js": "https://nikhedonia.github.io/computeshader/static/js/runtime-main.8ecb4894.js",
     "runtime-main.js.map": "https://nikhedonia.github.io/computeshader/static/js/runtime-main.8ecb4894.js.map",
     "static/js/2.cce545fc.chunk.js": "https://nikhedonia.github.io/computeshader/static/js/2.cce545fc.chunk.js",
@@ -17,6 +17,6 @@
     "static/js/runtime-main.8ecb4894.js",
     "static/js/2.cce545fc.chunk.js",
     "static/css/main.6dea0f05.chunk.css",
-    "static/js/main.4c0ea23a.chunk.js"
+    "static/js/main.ffab8270.chunk.js"
   ]
 }
