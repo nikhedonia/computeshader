@@ -1,6 +1,6 @@
 'use strict';
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const glsl = `
 const vec4 bitEnc = vec4(1.,255.,65025.,16581375.);
@@ -332,6 +332,7 @@ const fs = `
     }
   }
 
+  uniform float amplification;
   uniform float sp_width;
   uniform float sp_height;
 
@@ -344,13 +345,7 @@ const fs = `
 
   out vec4 result;
 
-
-  void main() {
-
-    ivec2 offset = ivec2(
-      gl_FragCoord.x,
-      sp_height - gl_FragCoord.y
-    );
+  float jointEntropy(ivec2 offset1, ivec2 offset2, sampler2D a, sampler2D b) {
 
     int buckets[64];
     for (int i = 0; i < 64; ++i) {
@@ -360,8 +355,8 @@ const fs = `
     for (int i = 0; i < int(m_width); ++i) {
       for (int j = 0; j < int(m_height); ++j) {
         ivec2 uv = ivec2(i, j);
-        vec3 fixedImg = texelFetch(fixedTex,  offset+uv, 0).rgb;
-        vec3 movingImg = texelFetch(movingTex, uv, 0).rgb;
+        vec3 fixedImg = texelFetch(a,  offset1+uv, 0).rgb;
+        vec3 movingImg = texelFetch(b, offset2+uv, 0).rgb;
         int bucketId = bucketOf(fixedImg, movingImg);
         buckets[bucketId] += 1;
       }
@@ -378,8 +373,24 @@ const fs = `
       entropy += entropyOf(buckets[i], total);
     }
 
-    vec3 color=vec3(entropy*0.2);
+    return entropy;
+  }
 
+
+  void main() {
+
+    ivec2 offset = ivec2(
+      gl_FragCoord.x,
+      sp_height - gl_FragCoord.y
+    );
+
+    float a = jointEntropy(offset, offset, fixedTex, fixedTex); 
+    float b = jointEntropy(ivec2(0,0), ivec2(0,0), movingTex, movingTex); 
+    float ab = jointEntropy(offset, ivec2(0,0), fixedTex, movingTex);
+    float totalEntropy = a + b;
+    float entropy = (totalEntropy - ab) / totalEntropy;
+
+    vec3 color=vec3(entropy*amplification);
 
     result = vec4(color, 1);
   }
@@ -394,6 +405,9 @@ function SearchSpace({
   const overlayCanvasRef = useRef(null);
   const fixedImageRef = useRef(null);
   const movingImageRef = useRef(null);
+  const [amplification, setAmplification] = useState(1.0);
+  const [firstRender, setFirstRender] = useState(true);
+  const [results, setResults] = useState(null);
 
   useEffect(()=>{
     setTimeout(async () => {
@@ -403,7 +417,11 @@ function SearchSpace({
         movingImageRef.current
       ];
 
-      await new Promise(done => setTimeout(done, 300));
+      // hack to ensure images are loaded
+      if (firstRender) {
+        await new Promise(done => setTimeout(done, 300));
+        setFirstRender(false);
+      }
       
       const searchSpace = [
         fixed.width - moving.width,
@@ -417,6 +435,7 @@ function SearchSpace({
           searchSpace
         ), 
         [
+          uniform1f("amplification", amplification),
           uniform1f("sp_width", searchSpace[0]),
           uniform1f("sp_height", searchSpace[1]),
           uniform1f("m_width", moving.width),
@@ -439,7 +458,7 @@ function SearchSpace({
       const uploadTime = readEnd - end;
       const iterations = searchSpace[0]*searchSpace[1];
       const pixelsCompared = iterations * fixed.width * fixed.height;
-      console.log({
+      const benchmark = {
         time,
         uploadTime,
         searchSpace,
@@ -449,17 +468,23 @@ function SearchSpace({
         pixelsCompared,
         itersPerSecond: iterations/time*1000,
         pixelsPerSecond: pixelsCompared/time*1000,
-      })
+      }
 
+      console.log(benchmark);
 
       const matrix = toGreyScaleMatrix(searchSpace[0], result);
       const data = matrix
         .flatMap( (row, y) => 
           row.map( (value, x) => ({value, y, x})))
-        .sort((a, b) => a.value - b.value);
+        .sort((a, b) => b.value - a.value);
 
 
       console.log({topResults5: data.slice(0,5)});
+
+      setResults({
+        benchmark,
+        matches: data.slice(0,5)
+      });
 
 
       // overlayCanvasRef.current.width = fixed.width;
@@ -470,10 +495,19 @@ function SearchSpace({
       // ctx.drawImage(moving, data[0].x, data[0].y);
 
     }, 0);
-  }, [fixedUrl, movingUrl]);
+  }, [amplification, fixedUrl, movingUrl]);
 
   return (
     <div>
+      <h1> Image Alignment with WebGL </h1>
+      <div>
+        Goal: find "moving image" inside "fixed image"
+        SearchSpace visualization shows how good the score of each x-y offset. 
+        Lighter is better.
+        Score is determined by computing the joint entropy (mutual information) between fixed and moving image.
+
+        Open console for performance metrics and results (ctrl+shift+i)
+      </div>
       <div style={{display:'flex'}} >
         <div>
           <h2>Fixed Image (haystack)</h2>
@@ -484,10 +518,44 @@ function SearchSpace({
           <img src={movingUrl} ref={movingImageRef} />
         </div>
         <div>
-          <h2>SearchSpace (darker is better) </h2>
+          <h2>SearchSpace (Lighter is better) </h2>
           <canvas ref={canvasRef} />
+          <div>
+            <label> Amplification:
+              <input onChange={e=>setAmplification(e.target.value)} type="number" defaultValue="1.0" value={amplification}/>
+            </label>
+          </div>
+          {results && (
+            <div style={{fontSize:"0.8em"}}>
+              <h3>Results</h3>
+
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Compute Time</td>
+                    <td>{results.benchmark.time}</td>
+                  </tr>
+                  <tr>
+                    <td>Data Extraction Time</td>
+                    <td>{results.benchmark.uploadTime}</td>
+                  </tr>
+                  {results.matches.map( ({x,y,value}, i) => (
+                    <tr key={i}>
+                      <td>match {i+1}</td>
+                      <td>offset: {x} | {y} ({value})</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+          </div>
+          )}
         </div>
-        {/*<canvas ref={overlayCanvasRef} />*/}
         
       </div>
     </div>
@@ -497,15 +565,6 @@ function SearchSpace({
 export default function App() {
   return (
     <div>
-      <h1> Image Alignment with WebGL </h1>
-      <div>
-        Goal: find "moving image" inside "fixed image".<br/>
-
-        SearchSpace visualization shows how good the images are aligned at each x-y coordinate.
-        Darker is better.<br/>
-
-        Open console for performance metrics and results (ctrl+shift+i)
-      </div>
       <SearchSpace fixedUrl="butterfly2.jpg" movingUrl="butterfly3.jpg" />
       <SearchSpace fixedUrl="butterfly2.jpg" movingUrl="butterfly4.jpg" />
       <SearchSpace fixedUrl="butterfly2.jpg" movingUrl="butterfly5.jpg" />
